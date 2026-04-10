@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Edit Movie - Book My Show Admin</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Admin Header -->
+        <div class="bg-primary text-white py-4 mb-4">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="h2 mb-0">
+                            <i class="fas fa-edit me-2"></i>Edit Movie
+                        </h1>
+                        <p class="mb-0">Update movie information</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <a href="/admin/movies" class="btn btn-light">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Movies
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Movie Form -->
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">
+                                <i class="fas fa-film me-2"></i>Movie Details
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/admin/movies/{id}/update(id=${movie.id})}" th:object="${movie}" method="post" onsubmit="return validateForm()">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="title" class="form-label">Movie Title <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="title" th:field="*{title}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="genre" class="form-label">Genre <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="genre" th:field="*{genre}" required>
+                                            <option value="">Select Genre</option>
+                                            <option th:each="genre : ${genres}" 
+                                                    th:value="${genre}" 
+                                                    th:text="${genre}"
+                                                    th:selected="${movie.genre == genre}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" th:field="*{description}" rows="4"></textarea>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="releaseDate" class="form-label">Release Date</label>
+                                        <input type="date" class="form-control" id="releaseDate" th:field="*{releaseDate}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="durationMinutes" class="form-label">Duration (minutes)</label>
+                                        <input type="number" class="form-control" id="durationMinutes" th:field="*{durationMinutes}" min="1">
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="director" class="form-label">Director</label>
+                                        <input type="text" class="form-control" id="director" th:field="*{director}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="cast" class="form-label">Cast</label>
+                                        <input type="text" class="form-control" id="cast" th:field="*{cast}" placeholder="Actor 1, Actor 2, Actor 3">
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="posterUrl" class="form-label">Poster URL</label>
+                                        <input type="url" class="form-control" id="posterUrl" th:field="*{posterUrl}">
+                                        <div class="form-text">Enter the URL of the movie poster image</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="trailerUrl" class="form-label">Trailer URL</label>
+                                        <input type="url" class="form-control" id="trailerUrl" th:field="*{trailerUrl}">
+                                        <div class="form-text">Enter the YouTube or video URL for the trailer</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isActive" th:field="*{isActive}">
+                                        <label class="form-check-label" for="isActive">
+                                            Active Movie
+                                        </label>
+                                        <div class="form-text">Movie ratings are calculated from customer reviews</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="/admin/movies" class="btn btn-secondary me-md-2">
+                                        <i class="fas fa-times me-1"></i>Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>Update Movie
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Movie Preview -->
+        <div class="container mt-4">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-eye me-2"></i>Current Movie Preview
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <img th:src="${movie.posterUrl}" 
+                                         th:alt="${movie.title}" 
+                                         class="img-fluid rounded shadow"
+                                         style="height: 300px; object-fit: cover;"
+                                         onerror="this.src='https://via.placeholder.com/300x450/6c757d/ffffff?text=No+Image'">
+                                </div>
+                                <div class="col-md-9">
+                                    <h3 th:text="${movie.title}">Movie Title</h3>
+                                    <p class="text-muted" th:text="${movie.description}">Movie description</p>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Genre:</strong> <span class="badge bg-primary" th:text="${movie.genre}">Action</span></p>
+                                            <p><strong>Director:</strong> <span th:text="${movie.director}">Director Name</span></p>
+                                            <p><strong>Cast:</strong> <span th:text="${movie.cast}">Cast Members</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Release Date:</strong> <span th:text="${movie.releaseDate}">2024-01-01</span></p>
+                                            <p><strong>Duration:</strong> <span th:text="${movie.durationMinutes} + ' minutes'">120 minutes</span></p>
+                                            <p><strong>Rating:</strong> 
+                                                <span th:if="${averageRating != null and averageRating > 0}">
+                                                    <i class="fas fa-star text-warning" th:each="i : ${#numbers.sequence(1, T(java.lang.Math).min(5, averageRating.intValue()))}"></i>
+                                                    <span th:text="${#numbers.formatDecimal(averageRating, 1, 1)}">4.5</span>
+                                                </span>
+                                                <span th:unless="${averageRating != null and averageRating > 0}">No reviews yet</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <p><strong>Status:</strong> 
+                                        <span class="badge" th:class="${movie.isActive ? 'bg-success' : 'bg-secondary'}" 
+                                              th:text="${movie.isActive ? 'Active' : 'Inactive'}">Active</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function validateForm() {
+            const title = document.getElementById('title').value.trim();
+            const genre = document.getElementById('genre').value;
+            
+            if (!title) {
+                alert('Movie title is required!');
+                document.getElementById('title').focus();
+                return false;
+            }
+            
+            if (!genre) {
+                alert('Please select a genre!');
+                document.getElementById('genre').focus();
+                return false;
+            }
+            
+            return true;
+        }
+    </script>
+</body>
+</html>

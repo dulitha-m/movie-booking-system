@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Select Seats - Book My Show</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container mt-4">
+            <!-- Movie & Showtime Info -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h1 class="display-5 fw-bold" th:text="${movie.title}">Movie Title</h1>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Theater:</strong> <span th:text="${theater.name}">Theater Name</span></p>
+                            <p><strong>Screen:</strong> <span th:text="${showtime.screenNumber}">1</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Date:</strong> <span th:text="${#temporals.format(showtime.showDateTime, 'dd MMM yyyy')}">01 Jan 2024</span></p>
+                            <p><strong>Time:</strong> <span th:text="${#temporals.format(showtime.showDateTime, 'HH:mm')}">19:00</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <h3 class="text-primary fw-bold" th:text="'Rs. ' + ${#numbers.formatDecimal(showtime.ticketPrice, 0, 0)}">Rs. 1,200</h3>
+                    <p class="text-muted">per seat</p>
+                </div>
+            </div>
+
+            <!-- Seat Selection -->
+            <div class="row">
+                <div class="col-md-8">
+                    <h3 class="mb-3 fw-bold">
+                        <i class="fas fa-chair me-2"></i>Select Your Seats
+                    </h3>
+                    
+                    <!-- Screen -->
+                    <div class="text-center mb-4">
+                        <div class="screen-display bg-dark text-white py-2 rounded">
+                            <i class="fas fa-tv me-2"></i>SCREEN
+                        </div>
+                    </div>
+                    
+                    <!-- Seat Layout -->
+                    <div class="seat-layout">
+                        <form id="seatForm" th:action="@{/booking/checkout}" method="post">
+                            <input type="hidden" name="showtimeId" th:value="${showtime.id}">
+                            
+                             <!-- Theater Layout matching the image -->
+                             <div class="theater-layout">
+                                 <!-- DIR'S LOUNGE Section -->
+                                 <h4 class="text-primary text-center mb-3">DIR'S LOUNGE</h4>
+                                 <div id="dl-section" class="seat-row mb-3">
+                                     <div class="seat-group">
+                                         <!-- DL seats will be organized by JavaScript -->
+                                     </div>
+                                 </div>
+                                 
+                                 <!-- STANDARD Section -->
+                                 <h4 class="text-secondary text-center mb-3">STANDARD</h4>
+                                 <div id="standard-section">
+                                     <!-- Standard seats will be organized by JavaScript -->
+                                 </div>
+                                 
+                                 <!-- Hidden seats container for JavaScript processing -->
+                                 <div id="hidden-seats" style="display: none;">
+                                     <div th:each="seat : ${seats}">
+                                         <button type="button" 
+                                                 th:id="${seat.seatNumber}" 
+                                                 th:data-seat="${seat.seatNumber}" 
+                                                 th:data-row="${seat.rowNumber}"
+                                                 th:data-price="${showtime.ticketPrice}"
+                                                 th:disabled="${seat.status.name() == 'OCCUPIED'}"
+                                                 th:class="'seat-btn ' + (${seat.status.name() == 'AVAILABLE'} ? 'seat-available' : 'seat-occupied')"
+                                                 onclick="toggleSeat(this)">
+                                             <span th:text="${seat.seatNumber}">A1</span>
+                                         </button>
+                                     </div>
+                                 </div>
+                             </div>
+                            
+                            <div class="text-center mt-4">
+                                <button type="submit" id="proceedBtn" class="btn btn-primary btn-lg" disabled>
+                                    <i class="fas fa-arrow-right me-2"></i>Proceed to Checkout
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Seat Legend & Summary -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Seat Legend
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                <button class="seat-btn seat-available me-2" disabled><span>1</span></button>
+                                <span>Available</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <button class="seat-btn seat-selected me-2" disabled><span>1</span></button>
+                                <span>Selected</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <button class="seat-btn seat-occupied me-2" disabled><span>1</span></button>
+                                <span>Occupied</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-receipt me-2"></i>Booking Summary
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Selected Seats:</span>
+                                <span id="selectedSeatsCount">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Price per seat:</span>
+                                <span th:text="'Rs. ' + ${#numbers.formatDecimal(showtime.ticketPrice, 0, 0)}">Rs. 1,200</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold">
+                                <span>Total:</span>
+                                <span id="totalPrice">Rs. 0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <a th:href="@{/booking/select-showtime/{id}(id=${showtime.movie.id})}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Showtimes
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .screen-display {
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+                border-radius: 10px;
+            }
+            
+            .theater-layout {
+                max-width: 800px;
+                margin: 0 auto;
+            }
+            
+            .seat-row {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 15px;
+                margin-bottom: 8px;
+            }
+            
+            .row-label {
+                font-size: 18px;
+                font-weight: bold;
+                color: #495057;
+                width: 30px;
+                text-align: center;
+                margin-right: 10px;
+            }
+            
+            .seat-group {
+                display: flex;
+                gap: 3px;
+                margin: 0 8px;
+            }
+            
+            /* Add spacing between seat groups to create aisles */
+            .seat-group:not(:last-child) {
+                margin-right: 20px;
+            }
+            
+            .seat-btn {
+                width: 35px;
+                height: 35px;
+                border: 2px solid #ddd;
+                background: #f8f9fa;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                font-weight: bold;
+                transition: all 0.2s ease;
+                cursor: pointer;
+            }
+            
+            .seat-btn:hover:not(:disabled) {
+                transform: scale(1.1);
+            }
+            
+            .seat-available {
+                background: #f8f9fa;
+                border-color: #28a745;
+                color: #28a745;
+            }
+            
+            .seat-available:hover:not(:disabled) {
+                background: #28a745;
+                color: white;
+            }
+            
+            .seat-selected {
+                background: #007bff;
+                border-color: #007bff;
+                color: white;
+            }
+            
+            .seat-occupied {
+                background: #dc3545;
+                border-color: #dc3545;
+                color: white;
+                cursor: not-allowed;
+            }
+            
+            /* Responsive design */
+            @media (max-width: 768px) {
+                .seat-btn {
+                    width: 30px;
+                    height: 30px;
+                    font-size: 10px;
+                }
+                
+                .seat-group {
+                    gap: 2px;
+                    margin: 0 4px;
+                }
+                
+                .seat-group:not(:last-child) {
+                    margin-right: 15px;
+                }
+                
+                .row-label {
+                    font-size: 16px;
+                    width: 25px;
+                }
+            }
+        </style>
+
+        <script>
+            let selectedSeats = [];
+            let seatPrice = 0;
+            
+            function organizeSeatLayout() {
+                const hiddenSeats = document.getElementById('hidden-seats');
+                const dlSection = document.getElementById('dl-section');
+                const standardSection = document.getElementById('standard-section');
+                
+                // Get all seat buttons
+                const seatButtons = hiddenSeats.querySelectorAll('.seat-btn');
+                
+                if (seatButtons.length === 0) {
+                    console.log('No seats found');
+                    return;
+                }
+                
+                // Get seat price from first seat
+                seatPrice = parseFloat(seatButtons[0].dataset.price);
+                
+                // Organize DL seats
+                const dlSeats = Array.from(seatButtons).filter(btn => btn.dataset.row === 'DL');
+                dlSeats.sort((a, b) => {
+                    const aNum = parseInt(a.dataset.seat.substring(2));
+                    const bNum = parseInt(b.dataset.seat.substring(2));
+                    return bNum - aNum; // Reverse order DL11-DL1
+                });
+                
+                // Create DL layout with gap
+                const dlGroup = dlSection.querySelector('.seat-group');
+                dlGroup.innerHTML = '';
+                
+                // Left block: DL11-DL5 (7 seats)
+                const leftBlock = document.createElement('div');
+                leftBlock.className = 'seat-group';
+                dlSeats.filter(seat => {
+                    const num = parseInt(seat.dataset.seat.substring(2));
+                    return num >= 5 && num <= 11;
+                }).forEach(seat => {
+                    leftBlock.appendChild(seat);
+                });
+                
+                // Right block: DL4-DL1 (4 seats)
+                const rightBlock = document.createElement('div');
+                rightBlock.className = 'seat-group';
+                dlSeats.filter(seat => {
+                    const num = parseInt(seat.dataset.seat.substring(2));
+                    return num >= 1 && num <= 4;
+                }).forEach(seat => {
+                    rightBlock.appendChild(seat);
+                });
+                
+                // Add gap between blocks
+                const gap = document.createElement('div');
+                gap.className = 'seat-gap';
+                gap.style.width = '40px';
+                
+                dlGroup.appendChild(leftBlock);
+                dlGroup.appendChild(gap);
+                dlGroup.appendChild(rightBlock);
+                
+                // Organize standard seats by row
+                const standardSeats = Array.from(seatButtons).filter(btn => btn.dataset.row !== 'DL');
+                const seatsByRow = {};
+                
+                standardSeats.forEach(seat => {
+                    const row = seat.dataset.row;
+                    if (!seatsByRow[row]) {
+                        seatsByRow[row] = [];
+                    }
+                    seatsByRow[row].push(seat);
+                });
+                
+                // Sort rows: I, H, G, F, E, D, C, B, A
+                const rowOrder = ['I', 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A'];
+                
+                standardSection.innerHTML = '';
+                
+                rowOrder.forEach(row => {
+                    if (seatsByRow[row]) {
+                        const seatRow = document.createElement('div');
+                        seatRow.className = 'seat-row mb-2';
+                        
+                        const rowLabel = document.createElement('div');
+                        rowLabel.className = 'row-label';
+                        rowLabel.textContent = row;
+                        
+                        const seatGroup = document.createElement('div');
+                        seatGroup.className = 'seat-group';
+                        
+                        // Sort seats by number in descending order (like the image shows)
+                        seatsByRow[row].sort((a, b) => {
+                            const aNum = parseInt(a.dataset.seat.substring(1));
+                            const bNum = parseInt(b.dataset.seat.substring(1));
+                            return bNum - aNum; // Descending order (17, 16, 15, ...)
+                        });
+                        
+                        // Add all seats to the same group (single row)
+                        seatsByRow[row].forEach(seat => {
+                            seatGroup.appendChild(seat);
+                        });
+                        
+                        seatRow.appendChild(rowLabel);
+                        seatRow.appendChild(seatGroup);
+                        standardSection.appendChild(seatRow);
+                    }
+                });
+                
+                console.log('Seat layout organized. Total seats:', seatButtons.length);
+            }
+            
+            function toggleSeat(button) {
+                const seatNumber = button.getAttribute('data-seat');
+                
+                if (button.classList.contains('seat-selected')) {
+                    // Deselect seat
+                    button.classList.remove('seat-selected');
+                    button.classList.add('seat-available');
+                    selectedSeats = selectedSeats.filter(seat => seat !== seatNumber);
+                } else {
+                    // Select seat
+                    button.classList.remove('seat-available');
+                    button.classList.add('seat-selected');
+                    selectedSeats.push(seatNumber);
+                }
+                
+                updateSummary();
+            }
+            
+            function updateSummary() {
+                const count = selectedSeats.length;
+                const total = count * seatPrice;
+                
+                document.getElementById('selectedSeatsCount').textContent = count;
+                document.getElementById('totalPrice').textContent = 'Rs. ' + total.toFixed(0);
+                
+                const proceedBtn = document.getElementById('proceedBtn');
+                if (count > 0) {
+                    proceedBtn.disabled = false;
+                    proceedBtn.textContent = `Proceed to Checkout (${count} seat${count > 1 ? 's' : ''})`;
+                } else {
+                    proceedBtn.disabled = true;
+                    proceedBtn.innerHTML = '<i class="fas fa-arrow-right me-2"></i>Proceed to Checkout';
+                }
+                
+                // Add hidden inputs for selected seats
+                const form = document.getElementById('seatForm');
+                // Remove existing hidden inputs
+                const existingInputs = form.querySelectorAll('input[name="selectedSeats"]');
+                existingInputs.forEach(input => input.remove());
+                
+                // Add new hidden inputs
+                selectedSeats.forEach(seat => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'selectedSeats';
+                    input.value = seat;
+                    form.appendChild(input);
+                });
+            }
+
+            // Initialize when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('Seat layout page loaded');
+                organizeSeatLayout();
+            });
+        </script>
+    </div>
+</body>
+</html>

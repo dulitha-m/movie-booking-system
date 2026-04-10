@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Home - Book My Show</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Hero Section -->
+        <div class="hero-section bg-gradient-primary text-white py-5 mb-5">
+            <div class="container">
+                <div class="row align-items-center min-vh-50">
+                    <div class="col-lg-6">
+                        <h1 class="display-4 fw-bold mb-3">
+                            <div>Welcome to</div>
+                            <div class="text-warning">Book My Show</div>
+                        </h1>
+                        <p class="lead mb-4">Discover, book, and enjoy the latest movies with ease. Your cinematic journey starts here.</p>
+                    </div>
+                    <div class="col-lg-6 text-center">
+                        <div class="hero-image">
+                            <i class="fas fa-film display-1 opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Movies Section -->
+        <div class="container mb-5">
+            <div class="row align-items-center mb-4">
+                <div class="col-md-8">
+                    <h2 class="fw-bold mb-0">
+                        <i class="fas fa-star me-2 text-warning"></i>Featured Movies
+                    </h2>
+                    <p class="text-muted mb-0">Discover the latest blockbusters and trending films</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="/movies" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-right me-1"></i>View All Movies
+                    </a>
+                </div>
+            </div>
+            
+            <div class="row" th:if="${featuredMovies != null and !featuredMovies.empty}">
+                <div class="col-lg-3 col-md-6 mb-4" th:each="movie : ${featuredMovies}">
+                    <div class="card h-100 shadow-sm movie-card">
+                        <div class="position-relative">
+                            <img th:src="${movie.posterUrl}" 
+                                 th:alt="${movie.title}" 
+                                 class="card-img-top" 
+                                 style="height: 350px; object-fit: cover;"
+                                 onerror="this.src='https://via.placeholder.com/300x450/6c757d/ffffff?text=No+Image'">
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge bg-warning text-dark" th:text="${movie.rating != null ? #numbers.formatDecimal(movie.rating, 1, 1) : 'N/A'}">4.5</span>
+                            </div>
+                            <div class="position-absolute top-0 start-0 m-2">
+                                <span class="badge bg-primary" th:text="${movie.genre}">Action</span>
+                            </div>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold" th:text="${movie.title}">Movie Title</h5>
+                            <p class="card-text text-muted small" th:text="${#strings.abbreviate(movie.description, 80)}">Movie description...</p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        <span th:text="${movie.durationMinutes}">120</span> min
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        <span th:text="${#temporals.format(movie.releaseDate, 'yyyy')}">2024</span>
+                                    </small>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <a th:href="@{/movies/{id}(id=${movie.id})}" class="btn btn-primary">
+                                        <i class="fas fa-info-circle me-1"></i>View Details
+                                    </a>
+                                    <a th:href="@{/booking/select-showtime/{id}(id=${movie.id})}" class="btn btn-outline-primary">
+                                        <i class="fas fa-ticket-alt me-1"></i>Book Now
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center" th:if="${featuredMovies == null or featuredMovies.empty}">
+                <div class="py-5">
+                    <i class="fas fa-film fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Featured Movies</h4>
+                    <p class="text-muted">Check back soon for the latest releases!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="container mb-5">
+            <h2 class="text-center fw-bold mb-5">Why Choose Book My Show?</h2>
+            <div class="row">
+                <div class="col-lg-3 col-md-6 text-center mb-4">
+                    <div class="feature-icon mb-3">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-ticket-alt fa-2x"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">Easy Booking</h5>
+                    <p class="text-muted">Book your movie tickets in just a few clicks with our user-friendly interface.</p>
+                </div>
+                <div class="col-lg-3 col-md-6 text-center mb-4">
+                    <div class="feature-icon mb-3">
+                        <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-star fa-2x"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">Reviews & Ratings</h5>
+                    <p class="text-muted">Read reviews and ratings from other movie enthusiasts before making your choice.</p>
+                </div>
+                <div class="col-lg-3 col-md-6 text-center mb-4">
+                    <div class="feature-icon mb-3">
+                        <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-mobile-alt fa-2x"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">Mobile Friendly</h5>
+                    <p class="text-muted">Access our platform from any device with our responsive design.</p>
+                </div>
+                <div class="col-lg-3 col-md-6 text-center mb-4">
+                    <div class="feature-icon mb-3">
+                        <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-shield-alt fa-2x"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">Secure Payment</h5>
+                    <p class="text-muted">Your payments are secure and protected with our advanced security measures.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+            min-height: 60vh;
+        }
+        
+        .min-vh-50 {
+            min-height: 50vh;
+        }
+        
+        .movie-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+        }
+        
+        .movie-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15) !important;
+        }
+        
+        .movie-card .card-img-top {
+            transition: transform 0.3s ease;
+        }
+        
+        .movie-card:hover .card-img-top {
+            transform: scale(1.05);
+        }
+        
+        
+        .feature-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+        }
+    </style>
+
+    <script>
+        // Handle profile deletion - force page refresh to clear any cached authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('deleted') === 'true') {
+                // Clear any cached authentication data
+                if (window.history.replaceState) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+                // Force a hard refresh to ensure authentication state is cleared
+                setTimeout(function() {
+                    window.location.reload(true);
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Promotions - Book My Show</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container mt-4">
+            <!-- Page Header -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h2 class="fw-bold mb-0">
+                        <i class="fas fa-tags me-2 text-primary"></i>Available Promotions
+                    </h2>
+                    <p class="text-muted mb-0">Get amazing discounts on your movie bookings!</p>
+                </div>
+            </div>
+
+            <!-- Promotions List -->
+            <div class="row" th:if="${allPromotions != null and !allPromotions.empty}">
+                <div class="col-lg-4 col-md-6 mb-4" th:each="promotion : ${allPromotions}">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header" th:classappend="${promotion.discountType.name() == 'PERCENTAGE'} ? 'bg-success text-white' : 'bg-warning text-dark'">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0" th:text="${promotion.name}">Promotion Name</h6>
+                                <span class="badge bg-light" 
+                                      th:classappend="${promotion.discountType.name() == 'PERCENTAGE'} ? 'text-success' : 'text-warning'"
+                                      th:text="${promotion.discountType.name() == 'PERCENTAGE'} ? promotion.discountValue + '% OFF' : 'Rs. ' + promotion.discountValue + ' OFF'">
+                                    20% OFF
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text small" th:text="${promotion.description}">Promotion description</p>
+                            
+                            <!-- Promo Code Section -->
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Promo Code:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control font-monospace fw-bold text-center" 
+                                           th:value="${promotion.code}" readonly>
+                                    <button class="btn btn-outline-primary btn-sm" type="button" 
+                                            th:onclick="'copyToClipboard(\'' + ${promotion.code} + '\')'">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Promotion Details -->
+                            <div class="row small text-muted mb-3">
+                                <div class="col-6">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    <span th:text="${promotion.startDate} + ' - ' + ${promotion.endDate}">Jan 01 - Dec 31, 2024</span>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <i class="fas fa-users me-1"></i>
+                                    <span th:text="${promotion.usedCount} + '/' + ${promotion.usageLimit != null ? promotion.usageLimit : '∞'}">5/100</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Terms -->
+                            <div class="small text-muted">
+                                <div th:if="${promotion.minimumAmount != null}">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Min. order: Rs. <span th:text="${promotion.minimumAmount}">500</span>
+                                </div>
+                                <div th:if="${promotion.maximumDiscount != null}">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Max. discount: Rs. <span th:text="${promotion.maximumDiscount}">200</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <div class="d-grid">
+                                <button class="btn btn-primary btn-sm" 
+                                        th:onclick="'copyToClipboard(\'' + ${promotion.code} + '\')'">
+                                    <i class="fas fa-copy me-1"></i>Copy & Use Code
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Promotions Available -->
+            <div class="text-center py-5" th:if="${allPromotions == null or allPromotions.empty}">
+                <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No Promotions Available</h4>
+                <p class="text-muted">Check back later for amazing deals and discounts!</p>
+                <a href="/movies" class="btn btn-primary">
+                    <i class="fas fa-film me-2"></i>Browse Movies
+                </a>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="row mt-5" th:if="${allPromotions != null and !allPromotions.empty}">
+                <div class="col-12">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">
+                                <i class="fas fa-ticket-alt me-2"></i>Ready to Book?
+                            </h5>
+                            <p class="card-text">Use your copied promo codes during checkout to get amazing discounts!</p>
+                            <a href="/movies" class="btn btn-light">
+                                <i class="fas fa-film me-2"></i>Browse Movies
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast for Copy Feedback -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div id="copyToast" class="toast" role="alert">
+                <div class="toast-header">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    <strong class="me-auto">Success!</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    Promo code copied to clipboard!
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(function() {
+                    const toast = new bootstrap.Toast(document.getElementById('copyToast'));
+                    toast.show();
+                }).catch(function(err) {
+                    console.error('Could not copy text: ', err);
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    const toast = new bootstrap.Toast(document.getElementById('copyToast'));
+                    toast.show();
+                });
+            }
+        </script>
+    </div>
+</body>
+</html>

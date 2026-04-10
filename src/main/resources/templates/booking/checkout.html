@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Checkout - Book My Show</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Movie & Showtime Info -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">
+                                <i class="fas fa-ticket-alt me-2"></i>Booking Details
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <img th:src="${movie.posterUrl}" class="img-fluid rounded" alt="Movie Poster">
+                                </div>
+                                <div class="col-md-9">
+                                    <h3 class="fw-bold" th:text="${movie.title}">Movie Title</h3>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Theater:</strong> <span th:text="${theater.name}">Theater Name</span></p>
+                                            <p><strong>Screen:</strong> <span th:text="${showtime.screenNumber}">1</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date:</strong> <span th:text="${#temporals.format(showtime.showDateTime, 'dd MMM yyyy')}">01 Jan 2024</span></p>
+                                            <p><strong>Time:</strong> <span th:text="${#temporals.format(showtime.showDateTime, 'HH:mm')}">19:00</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Promotion Code -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-tag me-2"></i>Promotion Code
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label for="promotionCode" class="form-label">Enter Promotion Code <span class="text-muted">(Optional)</span></label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="promotionCode" 
+                                               placeholder="e.g., SAVE20" maxlength="20">
+                                        <button class="btn btn-outline-primary" type="button" id="applyPromotionBtn">
+                                            <i class="fas fa-check me-1"></i>Apply
+                                        </button>
+                                        <button class="btn btn-outline-danger ms-2" type="button" id="removePromotionBtn" style="display: none;">
+                                            <i class="fas fa-times me-1"></i>Remove
+                                        </button>
+                                    </div>
+                                    <div class="form-text">Enter a valid promotion code to get discounts on your booking (optional)</div>
+                                    <div id="promotionMessage" class="mt-2"></div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            You can proceed without a promotion code
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-credit-card me-2"></i>Payment Method
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" value="Credit Card" checked>
+                                        <label class="form-check-label" for="creditCard">
+                                            <i class="fas fa-credit-card me-2"></i>Credit Card
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="paymentMethod" id="debitCard" value="Debit Card">
+                                        <label class="form-check-label" for="debitCard">
+                                            <i class="fas fa-credit-card me-2"></i>Debit Card
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="paymentMethod" id="paypal" value="PayPal">
+                                        <label class="form-check-label" for="paypal">
+                                            <i class="fab fa-paypal me-2"></i>PayPal
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-file-contract me-2"></i>Terms and Conditions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                <label class="form-check-label" for="termsCheck">
+                                    I agree to the <a href="#" class="text-primary">Terms and Conditions</a> and <a href="#" class="text-primary">Privacy Policy</a>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Summary -->
+                <div class="col-md-4">
+                    <div class="card sticky-top">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-receipt me-2"></i>Booking Summary
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Selected Seats:</span>
+                                <span th:text="${selectedSeats.size()}">2</span>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Seats:</small><br>
+                                <span th:each="seat, iterStat : ${selectedSeats}" th:text="${seat} + (${!iterStat.last} ? ', ' : '')">A1, A2</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Price per seat:</span>
+                                <span th:text="'Rs. ' + ${#numbers.formatDecimal(seatPrice, 0, 0)}">Rs. 1,200</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Subtotal:</span>
+                                <span id="subtotalAmount" th:text="'Rs. ' + ${#numbers.formatDecimal(totalPrice, 0, 0)}">Rs. 2,400</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2" id="promotionDiscountRow" style="display: none;">
+                                <span>Promotion Discount:</span>
+                                <span class="text-success" id="promotionDiscountAmount">-Rs. 0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Service fee:</span>
+                                <span>Rs. 0</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold fs-5">
+                                <span>Total:</span>
+                                <span class="text-success" id="finalTotal" th:text="'Rs. ' + ${#numbers.formatDecimal(totalPrice, 0, 0)}">Rs. 2,400</span>
+                            </div>
+                            
+                            <form th:action="@{/booking/process-booking}" method="post" class="mt-4" id="bookingForm">
+                                <input type="hidden" name="showtimeId" th:value="${showtime.id}">
+                                <input type="hidden" name="selectedSeats" th:each="seat : ${selectedSeats}" th:value="${seat}">
+                                <input type="hidden" name="paymentMethod" id="paymentMethodInput">
+                                <input type="hidden" name="promotionCode" id="promotionCodeInput">
+                                <input type="hidden" name="termsAccepted" id="termsAcceptedInput">
+                                <input type="hidden" id="subtotalValue" th:value="${totalPrice}">
+                                
+                                <button type="submit" id="confirmBookingBtn" class="btn btn-success btn-lg w-100" disabled>
+                                    <i class="fas fa-check-circle me-2"></i>Confirm Booking
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <a th:href="@{/booking/select-seats/{id}(id=${showtime.id})}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Seat Selection
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            #confirmBookingBtn:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+        </style>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                try {
+                    const termsCheck = document.getElementById('termsCheck');
+                    const confirmBtn = document.getElementById('confirmBookingBtn');
+                    const paymentMethodInput = document.getElementById('paymentMethodInput');
+                    const promotionCodeInput = document.getElementById('promotionCodeInput');
+                    const termsAcceptedInput = document.getElementById('termsAcceptedInput');
+                    const promotionCode = document.getElementById('promotionCode');
+                    const applyPromotionBtn = document.getElementById('applyPromotionBtn');
+                    const removePromotionBtn = document.getElementById('removePromotionBtn');
+                    const promotionMessage = document.getElementById('promotionMessage');
+                    const promotionDiscountRow = document.getElementById('promotionDiscountRow');
+                    const promotionDiscountAmount = document.getElementById('promotionDiscountAmount');
+                    const finalTotal = document.getElementById('finalTotal');
+                    const subtotalAmount = document.getElementById('subtotalAmount');
+                    const subtotalValue = document.getElementById('subtotalValue');
+                    
+                    // Get subtotal from hidden input field (most reliable method)
+                    let originalTotal = 2000; // Default fallback
+                    
+                    if (subtotalValue) {
+                        const subtotalFromInput = subtotalValue.value;
+                        console.log('Subtotal from hidden input:', subtotalFromInput);
+                        
+                        originalTotal = parseFloat(subtotalFromInput);
+                        console.log('Parsed subtotal from input:', originalTotal);
+                    } else {
+                        console.warn('Subtotal hidden input not found, trying display element');
+                        
+                        // Fallback to display element
+                        if (subtotalAmount) {
+                            const subtotalText = subtotalAmount.textContent;
+                            console.log('Subtotal text from display:', subtotalText);
+                            
+                            // Extract number from text like "Rs. 2,000" or "Rs. 2000"
+                            const numberMatch = subtotalText.match(/[\d,]+\.?\d*/);
+                            
+                            if (numberMatch) {
+                                const cleanNumber = numberMatch[0].replace(/,/g, '');
+                                originalTotal = parseFloat(cleanNumber);
+                                console.log('Parsed subtotal from display:', originalTotal);
+                            }
+                        }
+                    }
+                    
+                    // Validate the parsed number
+                    if (isNaN(originalTotal) || originalTotal <= 0) {
+                        console.warn('Failed to parse subtotal, using fallback:', originalTotal);
+                        originalTotal = 2000; // Default fallback
+                    }
+                    
+                    let appliedDiscount = 0;
+                    let appliedPromotionCode = '';
+                    
+                    console.log('Checkout page initialized successfully');
+                    console.log('Final subtotal for promotion calculation:', originalTotal);
+                    
+                    // Test: Let's verify what we're actually getting
+                    console.log('=== DEBUGGING SUBTOTAL CALCULATION ===');
+                    console.log('Subtotal hidden input found:', subtotalValue);
+                    console.log('Subtotal display element found:', subtotalAmount);
+                    if (subtotalValue) {
+                        console.log('Subtotal from hidden input:', subtotalValue.value);
+                    }
+                    if (subtotalAmount) {
+                        console.log('Subtotal from display:', subtotalAmount.textContent);
+                    }
+                    console.log('Final calculated originalTotal:', originalTotal);
+                    console.log('=== END DEBUGGING ===');
+                
+                // Initialize promotion code input with empty value
+                promotionCodeInput.value = '';
+                
+                // Update payment method
+                document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        paymentMethodInput.value = this.value;
+                    });
+                });
+                
+                // Set initial payment method
+                const initialPayment = document.querySelector('input[name="paymentMethod"]:checked');
+                if (initialPayment) {
+                    paymentMethodInput.value = initialPayment.value;
+                }
+                
+                // Enable/disable confirm button based on terms acceptance
+                termsCheck.addEventListener('change', function() {
+                    confirmBtn.disabled = !this.checked;
+                    termsAcceptedInput.value = this.checked ? 'true' : 'false';
+                });
+                
+                // Set initial state of confirm button and terms acceptance
+                confirmBtn.disabled = !termsCheck.checked;
+                termsAcceptedInput.value = termsCheck.checked ? 'true' : 'false';
+                
+                // Apply promotion code
+                applyPromotionBtn.addEventListener('click', function() {
+                    console.log('Apply button clicked');
+                    const code = promotionCode.value.trim().toUpperCase();
+                    console.log('Code entered:', code);
+                    
+                    if (!code) {
+                        showPromotionMessage('Please enter a promotion code to apply', 'info');
+                        return;
+                    }
+                    
+                    // Make AJAX call to validate promotion code
+                    validatePromotionCode(code);
+                });
+                
+                // Allow Enter key to apply promotion
+                promotionCode.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        applyPromotionBtn.click();
+                    }
+                });
+                
+                // Handle manual clearing of promotion code
+                promotionCode.addEventListener('input', function(e) {
+                    const currentValue = e.target.value.trim();
+                    console.log('Promotion code input changed:', currentValue);
+                    
+                    // If the field is cleared and we had a promotion applied, remove it
+                    if (currentValue === '' && appliedPromotionCode !== '') {
+                        console.log('Promotion code manually cleared, removing promotion');
+                        removePromotionBtn.click();
+                    }
+                });
+                
+                // Remove promotion functionality
+                removePromotionBtn.addEventListener('click', function() {
+                    console.log('Removing promotion');
+                    console.log('Current originalTotal:', originalTotal);
+                    console.log('Current appliedDiscount:', appliedDiscount);
+                    
+                    // Reset all promotion-related variables
+                    appliedDiscount = 0;
+                    appliedPromotionCode = '';
+                    
+                    // Reset UI - Hide promotion discount row
+                    console.log('Hiding promotion discount row');
+                    console.log('promotionDiscountRow element:', promotionDiscountRow);
+                    if (promotionDiscountRow) {
+                        promotionDiscountRow.style.display = 'none';
+                        promotionDiscountRow.style.visibility = 'hidden';
+                        promotionDiscountRow.classList.add('d-none');
+                        console.log('Promotion discount row hidden successfully');
+                    } else {
+                        console.error('promotionDiscountRow element not found!');
+                    }
+                    
+                    // Also clear the discount amount text
+                    if (promotionDiscountAmount) {
+                        promotionDiscountAmount.textContent = '-Rs. 0';
+                        console.log('Promotion discount amount cleared');
+                    }
+                    
+                    // Ensure we have the correct original total
+                    let resetTotal = originalTotal;
+                    if (isNaN(resetTotal) || resetTotal <= 0) {
+                        // Fallback: get the original subtotal from the hidden input
+                        if (subtotalValue) {
+                            resetTotal = parseFloat(subtotalValue.value);
+                        } else if (subtotalAmount) {
+                            const subtotalText = subtotalAmount.textContent;
+                            const numberMatch = subtotalText.match(/[\d,]+\.?\d*/);
+                            if (numberMatch) {
+                                resetTotal = parseFloat(numberMatch[0].replace(/,/g, ''));
+                            }
+                        }
+                    }
+                    
+                    console.log('Resetting total to:', resetTotal);
+                    finalTotal.textContent = 'Rs. ' + Math.round(resetTotal).toLocaleString();
+                    
+                    promotionCodeInput.value = '';
+                    promotionCode.value = '';
+                    promotionCode.disabled = false;
+                    
+                    // Reset buttons
+                    applyPromotionBtn.disabled = false;
+                    applyPromotionBtn.innerHTML = '<i class="fas fa-check me-1"></i>Apply';
+                    applyPromotionBtn.classList.remove('btn-success');
+                    applyPromotionBtn.classList.add('btn-outline-primary');
+                    removePromotionBtn.style.display = 'none';
+                    
+                    // Clear messages
+                    promotionMessage.innerHTML = '';
+                    
+                    showPromotionMessage('Promotion removed successfully', 'info');
+                });
+                
+                function validatePromotionCode(code) {
+                    console.log('Validating promotion code:', code);
+                    console.log('Subtotal amount for promotion calculation:', originalTotal);
+                    
+                    // Show loading state
+                    applyPromotionBtn.disabled = true;
+                    applyPromotionBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Applying...';
+                    
+                    // Make AJAX call to validate promotion code
+                    const requestData = {
+                        code: code,
+                        orderAmount: originalTotal
+                    };
+                    
+                    console.log('Sending request data:', requestData);
+                    console.log('Request JSON:', JSON.stringify(requestData));
+                    
+                    fetch('/api/promotions/validate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestData)
+                    })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Response data:', data);
+                        
+                        if (data.valid === true) {
+                            // Success - apply promotion
+                            const discountAmount = data.discountAmount;
+                            console.log('Promotion applied successfully, discount:', discountAmount);
+                            
+                            appliedDiscount = discountAmount;
+                            appliedPromotionCode = code;
+                            
+                            // Update UI
+                            promotionDiscountAmount.textContent = '-Rs. ' + Math.round(discountAmount).toLocaleString();
+                            promotionDiscountRow.style.display = 'flex';
+                            promotionDiscountRow.style.visibility = 'visible';
+                            promotionDiscountRow.classList.remove('d-none');
+                            
+                            const newTotal = originalTotal - discountAmount;
+                            finalTotal.textContent = 'Rs. ' + Math.round(newTotal).toLocaleString();
+                            
+                            promotionCodeInput.value = code;
+                            
+                            showPromotionMessage('Promotion applied successfully! You saved Rs. ' + Math.round(discountAmount).toLocaleString(), 'success');
+                            
+                            // Update button state
+                            promotionCode.disabled = true;
+                            applyPromotionBtn.innerHTML = '<i class="fas fa-check me-1"></i>Applied';
+                            applyPromotionBtn.classList.remove('btn-outline-primary');
+                            applyPromotionBtn.classList.add('btn-success');
+                            applyPromotionBtn.disabled = true;
+                            removePromotionBtn.style.display = 'inline-block';
+                        } else {
+                            // Invalid promotion
+                            console.log('Invalid promotion:', data.message);
+                            showPromotionMessage(data.message || 'Invalid promotion code. Please check and try again.', 'danger');
+                            
+                            // Reset button state
+                            applyPromotionBtn.disabled = false;
+                            applyPromotionBtn.innerHTML = '<i class="fas fa-check me-1"></i>Apply';
+                            applyPromotionBtn.classList.remove('btn-success');
+                            applyPromotionBtn.classList.add('btn-outline-primary');
+                            removePromotionBtn.style.display = 'none';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error validating promotion code:', error);
+                        showPromotionMessage('Error validating promotion code. Please try again.', 'danger');
+                        
+                        // Reset button state
+                        applyPromotionBtn.disabled = false;
+                        applyPromotionBtn.innerHTML = '<i class="fas fa-check me-1"></i>Apply';
+                        applyPromotionBtn.classList.remove('btn-success');
+                        applyPromotionBtn.classList.add('btn-outline-primary');
+                        removePromotionBtn.style.display = 'none';
+                    });
+                }
+                
+                function showPromotionMessage(message, type) {
+                    promotionMessage.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert">' +
+                        '<i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-triangle') + ' me-2"></i>' +
+                        message +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                        '</div>';
+                }
+                
+                // Confirm booking with confirmation dialog
+                confirmBtn.addEventListener('click', function(e) {
+                    console.log('Confirm button clicked');
+                    console.log('Terms checked:', termsCheck.checked);
+                    
+                    if (!termsCheck.checked) {
+                        e.preventDefault();
+                        alert('Please accept the terms and conditions to proceed.');
+                        return;
+                    }
+                    
+                    let confirmMessage = 'Are you sure you want to confirm this booking?';
+                    if (appliedPromotionCode) {
+                        confirmMessage += '\n\nApplied Promotion: ' + appliedPromotionCode + ' (Saved: Rs. ' + Math.round(appliedDiscount).toLocaleString() + ')';
+                    } else {
+                        confirmMessage += '\n\nNo promotion code applied.';
+                    }
+                    confirmMessage += '\n\nThis action cannot be undone.';
+                    
+                    const confirmed = confirm(confirmMessage);
+                    console.log('User confirmed:', confirmed);
+                    
+                    if (!confirmed) {
+                        e.preventDefault();
+                    } else {
+                        console.log('Form will submit now');
+                    }
+                    // If confirmed, let the form submit naturally
+                });
+                
+                // Form submission handler for final validation
+                document.getElementById('bookingForm').addEventListener('submit', function(e) {
+                    console.log('Form submission triggered');
+                    console.log('Terms checked:', termsCheck.checked);
+                    console.log('Payment method:', paymentMethodInput.value);
+                    
+                    if (!termsCheck.checked) {
+                        e.preventDefault();
+                        alert('Please accept the terms and conditions to proceed.');
+                        return;
+                    }
+                    
+                    // Ensure payment method is set
+                    if (!paymentMethodInput.value) {
+                        e.preventDefault();
+                        alert('Please select a payment method.');
+                        return;
+                    }
+                    
+                    console.log('Form submitting with data:', {
+                        showtimeId: document.querySelector('input[name="showtimeId"]').value,
+                        selectedSeats: Array.from(document.querySelectorAll('input[name="selectedSeats"]')).map(input => input.value),
+                        paymentMethod: paymentMethodInput.value,
+                        promotionCode: promotionCodeInput.value,
+                        termsAccepted: termsAcceptedInput.value
+                    });
+                });
+                
+                } catch (error) {
+                    console.error('Error initializing checkout page:', error);
+                    alert('Error initializing checkout page. Please refresh and try again.');
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

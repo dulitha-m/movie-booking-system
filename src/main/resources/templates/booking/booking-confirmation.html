@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Booking Confirmation - Book My Show</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container mt-4">
+            <!-- Success Header -->
+            <div class="row justify-content-center">
+                <div class="col-md-8 text-center">
+                    <div class="alert alert-success border-0 shadow-sm" role="alert">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h2 class="alert-heading fw-bold text-success">Booking Confirmed!</h2>
+                        <p class="mb-0 fs-5">Your movie tickets have been successfully booked.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Details -->
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-10">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">
+                                <i class="fas fa-ticket-alt me-2"></i>Booking Confirmation Details
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Movie Information -->
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <img th:src="${movie.posterUrl}" class="img-fluid rounded shadow" alt="Movie Poster">
+                                        </div>
+                                        <div class="col-md-8">
+                                            <h3 class="fw-bold text-primary" th:text="${movie.title}">Movie Title</h3>
+                                            <p class="text-muted mb-2" th:text="${movie.description}">Movie description</p>
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="badge bg-secondary me-2" th:text="${movie.genre}">Action</span>
+                                                <span class="text-muted">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    <span th:text="${movie.durationMinutes}">120</span> min
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Showtime Information -->
+                                <div class="col-md-6">
+                                    <h5 class="fw-bold mb-3">Show Details</h5>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <p><strong>Theater:</strong><br>
+                                                <span th:text="${theater.name}">Theater Name</span><br>
+                                                <small class="text-muted" th:text="${theater.address}">Theater Address</small>
+                                            </p>
+                                            <p><strong>Screen:</strong> <span th:text="${showtime.screenNumber}">1</span></p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p><strong>Date:</strong><br>
+                                                <span th:text="${#temporals.format(showtime.showDateTime, 'EEEE, dd MMM yyyy')}">Monday, 01 Jan 2024</span>
+                                            </p>
+                                            <p><strong>Time:</strong><br>
+                                                <span th:text="${#temporals.format(showtime.showDateTime, 'HH:mm')}">19:00</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Summary -->
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-10">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">
+                                <i class="fas fa-receipt me-2"></i>Booking Summary
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="fw-bold mb-3">Seat Information</h5>
+                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                        <span th:each="seat : ${selectedSeats}" 
+                                              class="badge bg-primary fs-6 px-3 py-2" 
+                                              th:text="${seat}">A1</span>
+                                    </div>
+                                    <p class="mb-2">
+                                        <strong>Total Seats:</strong> 
+                                        <span th:text="${selectedSeats.size()}">2</span>
+                                    </p>
+                                        <p class="mb-0">
+                                            <strong>Price per Seat:</strong> 
+                                            <span th:text="'Rs. ' + ${#numbers.formatDecimal(seatPrice, 0, 0)}">Rs. 1,200</span>
+                                        </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="fw-bold mb-3">Payment Information</h5>
+                                    <p class="mb-2">
+                                        <strong>Payment Method:</strong> 
+                                        <span th:text="${paymentMethod}">Credit Card</span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Booking Date:</strong> 
+                                        <span th:text="${#temporals.format(booking.bookingDate, 'dd MMM yyyy HH:mm')}">01 Jan 2024 20:30</span>
+                                    </p>
+                                    <hr>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0 fw-bold">Total Amount:</h5>
+                                            <h4 class="mb-0 text-success fw-bold" th:text="'Rs. ' + ${#numbers.formatDecimal(totalPrice, 0, 0)}">Rs. 2,400</h4>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Reference -->
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-10">
+                    <div class="card border-warning shadow">
+                        <div class="card-header bg-warning text-dark">
+                            <h4 class="mb-0">
+                                <i class="fas fa-key me-2"></i>Booking Reference
+                            </h4>
+                        </div>
+                        <div class="card-body text-center">
+                            <h2 class="fw-bold text-warning mb-3" th:text="${booking.bookingReference}">ABC12345</h2>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Please save this reference number for your records. You'll need it for any future inquiries about your booking.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row justify-content-center mt-5">
+                <div class="col-md-8 text-center">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="/home" class="btn btn-primary btn-lg me-md-2">
+                            <i class="fas fa-home me-2"></i>Back to Home
+                        </a>
+                        <a th:href="@{/booking/details/{id}(id=${booking.id})}" class="btn btn-outline-primary btn-lg me-md-2">
+                            <i class="fas fa-eye me-2"></i>View Booking Details
+                        </a>
+                        <button onclick="window.print()" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-print me-2"></i>Print Confirmation
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Important Information -->
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-10">
+                    <div class="alert alert-info border-0">
+                        <h6 class="alert-heading fw-bold">
+                            <i class="fas fa-info-circle me-2"></i>Important Information
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Please arrive at the theater at least 15 minutes before the showtime.</li>
+                            <li>Bring a valid ID and this booking reference for verification.</li>
+                            <li>Seats are non-refundable but can be exchanged up to 2 hours before showtime.</li>
+                            <li>For any queries, contact our customer service with your booking reference.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Print Styles -->
+        <style>
+            @media print {
+                .navbar, .btn, footer {
+                    display: none !important;
+                }
+                
+                .container {
+                    max-width: none !important;
+                }
+                
+                .card {
+                    box-shadow: none !important;
+                    border: 1px solid #ddd !important;
+                }
+                
+                .alert {
+                    border: 1px solid #ddd !important;
+                }
+                
+                .btn {
+                    display: none !important;
+                }
+            }
+        </style>
+    </div>
+</body>
+</html>

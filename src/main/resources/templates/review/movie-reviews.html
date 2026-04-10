@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Movie Reviews - Book My Show</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container mt-4">
+            <!-- Movie Header -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <img th:src="${movie.posterUrl}" class="img-fluid rounded shadow" alt="Movie Poster" style="max-width: 200px;">
+                </div>
+                <div class="col-md-9">
+                    <h1 class="display-5 fw-bold" th:text="${movie.title}">Movie Title</h1>
+                    <p class="lead text-muted" th:text="${movie.description}">Movie Description</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Genre:</strong> <span class="badge bg-secondary" th:text="${movie.genre.displayName}">Action</span></p>
+                            <p><strong>Duration:</strong> <span th:text="${movie.durationMinutes}">120</span> minutes</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Director:</strong> <span th:text="${movie.director}">Director Name</span></p>
+                            <p><strong>Release Date:</strong> <span th:text="${movie.releaseDate}">2024-01-01</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="fw-bold">
+                            <i class="fas fa-comments me-2 text-primary"></i>User Reviews
+                        </h2>
+                        <a th:href="@{/review/add/{movieId}(movieId=${movie.id})}" class="btn btn-primary" sec:authorize="isAuthenticated()">
+                            <i class="fas fa-plus me-1"></i>Add Review
+                        </a>
+                    </div>
+
+                    <!-- Reviews List -->
+                    <div th:if="${reviews != null and !reviews.isEmpty()}">
+                        <div class="row row-cols-1 row-cols-md-2 g-4">
+                            <div class="col" th:each="review : ${reviews}">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-header bg-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong th:text="${review.user.firstName + ' ' + review.user.lastName}">User Name</strong>
+                                                <small class="text-muted d-block" th:text="${review.user.email}">user@example.com</small>
+                                            </div>
+                                            <div class="rating-display">
+                                                <span th:each="i : ${#numbers.sequence(1, T(java.lang.Math).min(5, review.rating))}" class="text-warning">★</span>
+                                                <span th:each="i : ${#numbers.sequence(T(java.lang.Math).min(5, review.rating) + 1, 5)}" class="text-muted">★</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text" th:text="${review.comment}">Review comment...</p>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>
+                                            <span th:text="${#temporals.format(review.createdAt, 'MMM dd, yyyy HH:mm')}">Jan 01, 2024 12:00</span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- No Reviews Message -->
+                    <div th:if="${reviews == null or reviews.isEmpty()}" class="text-center py-5">
+                        <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                        <h3 class="text-muted">No Reviews Yet</h3>
+                        <p class="text-muted">Be the first to review this movie!</p>
+                        <a th:href="@{/review/add/{movieId}(movieId=${movie.id})}" class="btn btn-primary" sec:authorize="isAuthenticated()">
+                            <i class="fas fa-plus me-2"></i>Write First Review
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back to Movie -->
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <a th:href="@{/movies/{id}(id=${movie.id})}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Movie Details
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .rating-display {
+                font-size: 1.2rem;
+            }
+            
+            .card {
+                transition: transform 0.2s;
+            }
+            
+            .card:hover {
+                transform: translateY(-2px);
+            }
+        </style>
+    </div>
+</body>
+</html>

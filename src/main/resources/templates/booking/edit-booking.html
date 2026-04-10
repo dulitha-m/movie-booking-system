@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Edit Booking - Book My Show</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container mt-4">
+            <!-- Page Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h1 class="display-5 fw-bold text-center mb-4">
+                        <i class="fas fa-edit me-2 text-warning"></i>Edit Booking
+                    </h1>
+                    <p class="text-center text-muted">Change your showtime for this movie</p>
+                </div>
+            </div>
+
+            <!-- Current Booking Info -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Current Booking Details
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <img th:src="${movie.posterUrl}" 
+                                         th:alt="${movie.title}" 
+                                         class="img-fluid rounded shadow" 
+                                         style="max-height: 200px; object-fit: cover;">
+                                </div>
+                                <div class="col-md-9">
+                                    <h4 class="fw-bold text-primary" th:text="${movie.title}">Movie Title</h4>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Theater:</strong> <span th:text="${theater.name}">Theater Name</span></p>
+                                            <p><strong>Screen:</strong> <span th:text="${currentShowtime.screenNumber}">1</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Current Date:</strong> 
+                                                <span th:text="${#temporals.format(currentShowtime.showDateTime, 'dd MMM yyyy')}">01 Jan 2024</span>
+                                            </p>
+                                            <p><strong>Current Time:</strong> 
+                                                <span th:text="${#temporals.format(currentShowtime.showDateTime, 'HH:mm')}">19:00</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <p><strong>Selected Seats:</strong> 
+                                            <span th:each="seat, iterStat : ${#strings.listSplit(booking.selectedSeats, ',')}" 
+                                                  th:text="${seat} + (${!iterStat.last} ? ', ' : '')">A1, A2</span>
+                                        </p>
+                                        <p><strong>Total Amount:</strong> 
+                                            <span class="text-success fw-bold" th:text="'Rs. ' + ${#numbers.formatDecimal(booking.totalAmount, 0, 0)}">Rs. 2,400</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Important Notes
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>You can only change the showtime for the same movie</li>
+                                <li>Seat selection cannot be changed</li>
+                                <li>Price may vary based on new showtime</li>
+                                <li>Changes are final once confirmed</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Showtimes -->
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="mb-4 fw-bold">
+                        <i class="fas fa-clock me-2"></i>Select New Showtime
+                    </h3>
+                    
+                    <div th:if="${availableShowtimes.isEmpty()}" class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>No other showtimes available for this movie.
+                    </div>
+                    
+                    <form th:action="@{/booking/update/{id}(id=${booking.id})}" method="post" th:if="${!availableShowtimes.isEmpty()}">
+                        <div class="row">
+                            <div class="col-md-6 col-lg-4 mb-3" th:each="showtime : ${availableShowtimes}">
+                                <div class="card h-100 shadow-sm showtime-card" 
+                                     th:class="${showtime.id == currentShowtime.id ? 'border-warning bg-light' : ''}">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title fw-bold" th:text="${showtime.theater.name}">Theater Name</h6>
+                                        <p class="card-text">
+                                            <i class="fas fa-calendar-alt me-2"></i>
+                                            <span th:text="${#temporals.format(showtime.showDateTime, 'dd MMM yyyy')}">01 Jan 2024</span>
+                                        </p>
+                                        <p class="card-text">
+                                            <i class="fas fa-clock me-2"></i>
+                                            <span th:text="${#temporals.format(showtime.showDateTime, 'HH:mm')}">19:00</span>
+                                        </p>
+                                        <p class="card-text">
+                                            <i class="fas fa-tv me-2"></i>
+                                            Screen <span th:text="${showtime.screenNumber}">1</span>
+                                        </p>
+                                        <p class="card-text">
+                                            <i class="fas fa-chair me-2"></i>
+                                            <span th:text="${showtime.availableSeats}">100</span> seats available
+                                        </p>
+                                        <div class="mt-3">
+                                            <h5 class="text-primary fw-bold" th:text="'Rs. ' + ${#numbers.formatDecimal(showtime.ticketPrice, 0, 0)}">Rs. 1,200</h5>
+                                        </div>
+                                        <div class="mt-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" 
+                                                       type="radio" 
+                                                       name="newShowtimeId" 
+                                                       th:id="'showtime_' + ${showtime.id}"
+                                                       th:value="${showtime.id}"
+                                                       th:checked="${showtime.id == currentShowtime.id}">
+                                                <label class="form-check-label" th:for="'showtime_' + ${showtime.id}">
+                                                    <span th:if="${showtime.id == currentShowtime.id}" class="text-muted">Current Selection</span>
+                                                    <span th:unless="${showtime.id == currentShowtime.id}">Select This Showtime</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-warning btn-lg me-3">
+                                <i class="fas fa-save me-2"></i>Update Booking
+                            </button>
+                            <a th:href="@{/booking/my-bookings}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Back to My Bookings
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .showtime-card {
+                transition: transform 0.2s ease-in-out;
+                border: 2px solid transparent;
+            }
+            
+            .showtime-card:hover {
+                transform: translateY(-5px);
+                border-color: #0d6efd;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+            }
+            
+            .showtime-card .card-body {
+                padding: 1.5rem;
+            }
+            
+            .form-check-input:checked + .form-check-label {
+                font-weight: bold;
+                color: #0d6efd;
+            }
+        </style>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Add click handler to showtime cards
+                document.querySelectorAll('.showtime-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const radio = this.querySelector('input[type="radio"]');
+                        if (radio && !radio.disabled) {
+                            radio.checked = true;
+                        }
+                    });
+                });
+            });
+        </script>
+    </div>
+</body>
+</html>

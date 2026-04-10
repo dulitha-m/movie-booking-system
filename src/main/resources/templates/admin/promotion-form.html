@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title th:text="${promotion.id != null ? 'Edit Promotion' : 'Add Promotion'} + ' - Book My Show'">Add Promotion - Book My Show</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container mt-4">
+            <!-- Page Header -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h2 class="fw-bold mb-0">
+                        <i class="fas fa-tag me-2 text-primary"></i>
+                        <span th:text="${promotion.id != null ? 'Edit Promotion' : 'Add New Promotion'}">Add New Promotion</span>
+                    </h2>
+                    <p class="text-muted mb-0">Create or update promotion details</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="/admin/promotions" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Promotions
+                    </a>
+                </div>
+            </div>
+
+            <!-- Success/Error Messages -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Promotion Form -->
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Promotion Details
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <form th:action="${promotion.id != null ? '/admin/promotions/edit/' + promotion.id : '/admin/promotions/add'}" 
+                                  th:object="${promotion}" method="post">
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="code" class="form-label">Promotion Code <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="code" th:field="*{code}" 
+                                               placeholder="e.g., SAVE20" required>
+                                        <div class="form-text">Unique code customers will use to apply this promotion</div>
+                                        <div th:if="${#fields.hasErrors('code')}" class="text-danger small mt-1">
+                                            <span th:errors="*{code}"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="name" class="form-label">Promotion Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="name" th:field="*{name}" 
+                                               placeholder="e.g., Summer Sale 2024" required>
+                                        <div th:if="${#fields.hasErrors('name')}" class="text-danger small mt-1">
+                                            <span th:errors="*{name}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" th:field="*{description}" 
+                                              rows="3" placeholder="Describe this promotion..."></textarea>
+                                    <div th:if="${#fields.hasErrors('description')}" class="text-danger small mt-1">
+                                        <span th:errors="*{description}"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="discountType" class="form-label">Discount Type <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="discountType" th:field="*{discountType}" required>
+                                            <option value="">Select Discount Type</option>
+                                            <option th:each="type : ${discountTypes}" 
+                                                    th:value="${type}" 
+                                                    th:text="${type.displayName}">Percentage</option>
+                                        </select>
+                                        <div th:if="${#fields.hasErrors('discountType')}" class="text-danger small mt-1">
+                                            <span th:errors="*{discountType}"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="discountValue" class="form-label">Discount Value <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="discountValue" th:field="*{discountValue}" 
+                                                   step="0.01" min="0.01" required>
+                                            <span class="input-group-text" id="discountUnit">%</span>
+                                        </div>
+                                        <div class="form-text">Enter percentage (e.g., 20) or fixed amount (e.g., 100)</div>
+                                        <div th:if="${#fields.hasErrors('discountValue')}" class="text-danger small mt-1">
+                                            <span th:errors="*{discountValue}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="minimumAmount" class="form-label">Minimum Order Amount</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">Rs.</span>
+                                            <input type="number" class="form-control" id="minimumAmount" th:field="*{minimumAmount}" 
+                                                   step="0.01" min="0">
+                                        </div>
+                                        <div class="form-text">Minimum order amount required to use this promotion</div>
+                                        <div th:if="${#fields.hasErrors('minimumAmount')}" class="text-danger small mt-1">
+                                            <span th:errors="*{minimumAmount}"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="maximumDiscount" class="form-label">Maximum Discount</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">Rs.</span>
+                                            <input type="number" class="form-control" id="maximumDiscount" th:field="*{maximumDiscount}" 
+                                                   step="0.01" min="0">
+                                        </div>
+                                        <div class="form-text">Maximum discount amount (for percentage discounts)</div>
+                                        <div th:if="${#fields.hasErrors('maximumDiscount')}" class="text-danger small mt-1">
+                                            <span th:errors="*{maximumDiscount}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="usageLimit" class="form-label">Usage Limit</label>
+                                        <input type="number" class="form-control" id="usageLimit" th:field="*{usageLimit}" 
+                                               min="1" placeholder="Leave empty for unlimited">
+                                        <div class="form-text">Maximum number of times this promotion can be used</div>
+                                        <div th:if="${#fields.hasErrors('usageLimit')}" class="text-danger small mt-1">
+                                            <span th:errors="*{usageLimit}"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Current Usage</label>
+                                        <input type="text" class="form-control" th:value="${promotion.usedCount != null ? promotion.usedCount : 0}" 
+                                               readonly>
+                                        <div class="form-text">Number of times this promotion has been used</div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="startDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="startDate" th:field="*{startDate}" required>
+                                        <div th:if="${#fields.hasErrors('startDate')}" class="text-danger small mt-1">
+                                            <span th:errors="*{startDate}"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="endDate" class="form-label">End Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="endDate" th:field="*{endDate}" required>
+                                        <div th:if="${#fields.hasErrors('endDate')}" class="text-danger small mt-1">
+                                            <span th:errors="*{endDate}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isActive" th:field="*{isActive}">
+                                        <label class="form-check-label" for="isActive">
+                                            Active Promotion
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Only active promotions can be used by customers</div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>
+                                        <span th:text="${promotion.id != null ? 'Update Promotion' : 'Create Promotion'}">Create Promotion</span>
+                                    </button>
+                                    <a href="/admin/promotions" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Update discount unit based on discount type
+            document.getElementById('discountType').addEventListener('change', function() {
+                const discountUnit = document.getElementById('discountUnit');
+                const discountValue = document.getElementById('discountValue');
+                
+                if (this.value === 'PERCENTAGE') {
+                    discountUnit.textContent = '%';
+                    discountValue.setAttribute('max', '100');
+                } else if (this.value === 'FIXED_AMOUNT') {
+                    discountUnit.textContent = 'Rs.';
+                    discountValue.removeAttribute('max');
+                }
+            });
+
+            // Set minimum date to today
+            document.addEventListener('DOMContentLoaded', function() {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('startDate').setAttribute('min', today);
+                document.getElementById('endDate').setAttribute('min', today);
+                
+                // Update end date minimum when start date changes
+                document.getElementById('startDate').addEventListener('change', function() {
+                    document.getElementById('endDate').setAttribute('min', this.value);
+                });
+            });
+        </script>
+    </div>
+</body>
+</html>

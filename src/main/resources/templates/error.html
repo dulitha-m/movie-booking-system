@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Error - Book My Show</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8 text-center">
+                    <div class="error-page">
+                        <i class="fas fa-exclamation-triangle fa-5x text-warning mb-4"></i>
+                        <h1 class="display-4 fw-bold text-danger mb-3" th:text="${status} ?: 'Error'">Error</h1>
+                        <h2 class="h4 text-muted mb-4" th:text="${error} ?: 'Something went wrong'">Something went wrong</h2>
+                        <p class="lead mb-4" th:text="${message} ?: 'We apologize for the inconvenience. Please try again later.'">We apologize for the inconvenience. Please try again later.</p>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a href="/home" class="btn btn-primary btn-lg me-md-2">
+                                <i class="fas fa-home me-2"></i>Go Home
+                            </a>
+                            <button onclick="history.back()" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Go Back
+                            </button>
+                        </div>
+                        
+                        <!-- Error Details (only show in development) -->
+                        <div th:if="${trace}" class="mt-5">
+                            <details class="text-start">
+                                <summary class="btn btn-outline-info">Show Error Details</summary>
+                                <pre class="mt-3 p-3 bg-light rounded" th:text="${trace}"></pre>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

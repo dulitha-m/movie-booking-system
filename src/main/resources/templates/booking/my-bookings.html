@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>My Bookings - Book My Show</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container mt-4">
+            <!-- Page Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h1 class="display-5 fw-bold text-center mb-4">
+                        <i class="fas fa-ticket-alt me-2 text-primary"></i>My Bookings
+                    </h1>
+                    <p class="text-center text-muted">Manage your movie bookings</p>
+                </div>
+            </div>
+
+            <!-- Bookings List -->
+            <div class="row" th:if="${bookings != null and !bookings.empty}">
+                <div class="col-12">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        <div class="col" th:each="booking : ${bookings}">
+                            <div class="card h-100 shadow-sm booking-card">
+                                <div class="card-header bg-primary text-white">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 fw-bold" th:text="${booking.bookingReference}">ABC12345</h6>
+                                        <span class="badge" 
+                                              th:class="${booking.status.name() == 'CONFIRMED' ? 'bg-success' : 
+                                                        booking.status.name() == 'CANCELLED' ? 'bg-danger' : 'bg-warning'}"
+                                              th:text="${booking.status.name()}">CONFIRMED</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Movie Info -->
+                                    <div class="row mb-3">
+                                        <div class="col-4">
+                                            <img th:src="${booking.showtime.movie.posterUrl}" 
+                                                 th:alt="${booking.showtime.movie.title}" 
+                                                 class="img-fluid rounded" 
+                                                 style="height: 80px; object-fit: cover;">
+                                        </div>
+                                        <div class="col-8">
+                                            <h6 class="fw-bold mb-1" th:text="${booking.showtime.movie.title}">Movie Title</h6>
+                                            <p class="text-muted small mb-1" th:text="${booking.showtime.theater.name}">Theater Name</p>
+                                            <p class="text-muted small mb-0">
+                                                Screen <span th:text="${booking.showtime.screenNumber}">1</span>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Showtime Info -->
+                                    <div class="mb-3">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Date:</small><br>
+                                                <strong th:text="${#temporals.format(booking.showtime.showDateTime, 'dd MMM yyyy')}">01 Jan 2024</strong>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Time:</small><br>
+                                                <strong th:text="${#temporals.format(booking.showtime.showDateTime, 'HH:mm')}">19:00</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Booking Details -->
+                                    <div class="mb-3">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Seats:</small><br>
+                                                <span class="badge bg-secondary" th:text="${#strings.listSplit(booking.selectedSeats, ',') != null ? #strings.listSplit(booking.selectedSeats, ',').size() : 0} + ' seat(s)'">2 seat(s)</span>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Total:</small><br>
+                                                <strong class="text-success" th:text="'Rs. ' + ${#numbers.formatDecimal(booking.totalAmount, 0, 0)}">Rs. 2,400</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Selected Seats -->
+                                    <div class="mb-3">
+                                        <small class="text-muted">Selected Seats:</small><br>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <span th:each="seat : ${#strings.listSplit(booking.selectedSeats, ',')}" 
+                                                  class="badge bg-primary" 
+                                                  th:text="${seat}">A1</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Booking Date -->
+                                    <div class="mb-3">
+                                        <small class="text-muted">Booked on:</small><br>
+                                        <span th:text="${#temporals.format(booking.bookingDate, 'dd MMM yyyy HH:mm')}">01 Jan 2024 20:30</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="card-footer bg-light">
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                        <a th:href="@{/booking/details/{id}(id=${booking.id})}" 
+                                           class="btn btn-outline-info btn-sm">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </a>
+                                        <a th:href="@{/booking/edit/{id}(id=${booking.id})}" 
+                                           class="btn btn-outline-warning btn-sm"
+                                           th:if="${booking.status.name() == 'CONFIRMED'}">
+                                            <i class="fas fa-edit me-1"></i>Edit
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-outline-danger btn-sm"
+                                                th:onclick="'cancelBooking(' + ${booking.id} + ')'"
+                                                th:if="${booking.status.name() == 'CONFIRMED'}">
+                                            <i class="fas fa-times me-1"></i>Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Bookings Message -->
+            <div class="text-center py-5" th:if="${bookings == null or bookings.empty}">
+                <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+                <h3 class="text-muted">No Bookings Found</h3>
+                <p class="text-muted">You haven't made any bookings yet. Start by browsing our movies!</p>
+                <a href="/movies" class="btn btn-primary">
+                    <i class="fas fa-film me-2"></i>Browse Movies
+                </a>
+            </div>
+        </div>
+
+        <!-- Cancel Booking Modal -->
+        <div class="modal fade" id="cancelBookingModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Cancel Booking
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to cancel this booking?</p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> Cancelled bookings cannot be restored. You will need to make a new booking if you change your mind.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Booking</button>
+                        <form id="cancelForm" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times me-1"></i>Yes, Cancel Booking
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .booking-card {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            
+            .booking-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+            }
+            
+            .booking-card .card-img-top {
+                transition: transform 0.3s ease;
+            }
+            
+            .booking-card:hover .card-img-top {
+                transform: scale(1.05);
+            }
+        </style>
+
+        <script>
+            function cancelBooking(bookingId) {
+                const modal = new bootstrap.Modal(document.getElementById('cancelBookingModal'));
+                const form = document.getElementById('cancelForm');
+                form.action = '/booking/cancel/' + bookingId;
+                modal.show();
+            }
+        </script>
+    </div>
+</body>
+</html>

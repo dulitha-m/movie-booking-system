@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Admin Dashboard - Book My Show</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Admin Header -->
+        <div class="bg-primary text-white py-4 mb-4">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="h2 mb-0">
+                            <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                        </h1>
+                        <p class="mb-0">Manage your movie booking system</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="btn-group" role="group">
+                            <button onclick="refreshDashboard()" class="btn btn-light" title="Refresh Dashboard">
+                                <i class="fas fa-sync-alt me-1"></i>Refresh
+                            </button>
+                            <a href="/admin/movies" class="btn btn-light">
+                                <i class="fas fa-film me-1"></i>Movies
+                            </a>
+                            <a href="/admin/showtimes" class="btn btn-light">
+                                <i class="fas fa-clock me-1"></i>Showtimes
+                            </a>
+                            <a href="/admin/promotions" class="btn btn-light">
+                                <i class="fas fa-tags me-1"></i>Promotions
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="container mb-5">
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title" th:text="${totalMovies}">0</h4>
+                                    <p class="card-text">Total Movies</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-film fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title" th:text="${activeMovies}">0</h4>
+                                    <p class="card-text">Active Movies</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-play fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-4">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title" th:text="${upcomingShowtimes}">0</h4>
+                                    <p class="card-text">Upcoming Shows</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-clock fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title" th:text="${totalBookings}">0</h4>
+                                    <p class="card-text">Total Bookings</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-ticket-alt fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional Statistics Row -->
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <div class="card bg-secondary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title" th:text="${totalUsers}">0</h4>
+                                    <p class="card-text">Total Users</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-users fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-4">
+                    <div class="card bg-dark text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title" th:text="${totalTheaters}">0</h4>
+                                    <p class="card-text">Total Theaters</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-building fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-4">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title" th:text="${recentBookings}">0</h4>
+                                    <p class="card-text">Recent Bookings (7 days)</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-calendar-check fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title" th:text="'Rs. ' + ${#numbers.formatDecimal(totalRevenue, 0, 0)}">Rs. 0</h4>
+                                    <p class="card-text">Total Revenue</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-dollar-sign fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="container mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="mb-4">
+                        <i class="fas fa-bolt me-2 text-warning"></i>Quick Actions
+                    </h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">Add New Movie</h5>
+                            <p class="card-text">Upload a new movie to the system</p>
+                            <a href="/admin/movies" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Add Movie
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-clock fa-3x text-success mb-3"></i>
+                            <h5 class="card-title">Manage Showtimes</h5>
+                            <p class="card-text">Set up movie showtimes and pricing</p>
+                            <a href="/admin/showtimes" class="btn btn-success">
+                                <i class="fas fa-clock me-1"></i>Manage Shows
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-tags fa-3x text-warning mb-3"></i>
+                            <h5 class="card-title">Manage Promotions</h5>
+                            <p class="card-text">Create and manage discount codes</p>
+                            <a href="/admin/promotions" class="btn btn-warning">
+                                <i class="fas fa-tags me-1"></i>Manage Promotions
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-bar fa-3x text-info mb-3"></i>
+                            <h5 class="card-title">View Reports</h5>
+                            <p class="card-text">Analyze booking trends and revenue</p>
+                            <a href="/admin/reports" class="btn btn-info">
+                                <i class="fas fa-chart-bar me-1"></i>View Reports
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Movie Analytics Section -->
+        <div class="container mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="mb-4">
+                        <i class="fas fa-film me-2 text-primary"></i>Movie Analytics
+                    </h3>
+                    <p class="text-muted mb-4">Click on any movie to view detailed analytics and performance metrics.</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Movie</th>
+                                            <th>Genre</th>
+                                            <th>Rating</th>
+                                            <th>Bookings</th>
+                                            <th>Revenue</th>
+                                            <th>Reviews</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="movie : ${movies}">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img th:src="${movie.posterUrl}" 
+                                                         th:alt="${movie.title}" 
+                                                         class="rounded me-3" 
+                                                         style="width: 50px; height: 70px; object-fit: cover;">
+                                                    <div>
+                                                        <h6 class="mb-0" th:text="${movie.title}">Movie Title</h6>
+                                                        <small class="text-muted" th:text="${movie.director}">Director</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary" th:text="${movie.genre}">Genre</span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="text-warning me-1">
+                                                        <i class="fas fa-star" th:each="i : ${#numbers.sequence(1, 5)}" 
+                                                           th:class="${i <= movie.rating ? 'fas fa-star' : 'far fa-star'}"></i>
+                                                    </span>
+                                                    <span th:text="${#numbers.formatDecimal(movie.rating, 1, 1)}">4.5</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary" th:text="${movieAnalytics[movie.id].bookingCount}">0</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-success fw-bold" th:text="'Rs. ' + ${#numbers.formatDecimal(movieAnalytics[movie.id].totalRevenue, 0, 0)}">Rs. 0</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info" th:text="${movieAnalytics[movie.id].reviewCount}">0</span>
+                                            </td>
+                                            <td>
+                                                <span th:if="${movie.isActive}" class="badge bg-success">Active</span>
+                                                <span th:unless="${movie.isActive}" class="badge bg-secondary">Inactive</span>
+                                            </td>
+                                            <td>
+                                                <a th:href="@{/admin/movies/{id}/analytics(id=${movie.id})}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-chart-line me-1"></i>View Analytics
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="container mb-5">
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-pie me-2"></i>Movie Genres Distribution
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="genreChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-line me-2"></i>Booking Trends
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="bookingChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Refresh dashboard function
+        function refreshDashboard() {
+            // Show loading state
+            const refreshBtn = document.querySelector('button[onclick="refreshDashboard()"]');
+            const originalText = refreshBtn.innerHTML;
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Refreshing...';
+            refreshBtn.disabled = true;
+            
+            // Reload the page
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        }
+        
+        // Auto-refresh dashboard every 30 seconds
+        setInterval(function() {
+            // Only auto-refresh if user is not actively interacting
+            if (document.visibilityState === 'visible') {
+                window.location.reload();
+            }
+        }, 30000); // 30 seconds
+        
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Genre Distribution Chart
+            const genreCtx = document.getElementById('genreChart').getContext('2d');
+            new Chart(genreCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Action', 'Comedy', 'Drama', 'Horror', 'Romance'],
+                    datasets: [{
+                        data: [12, 19, 3, 5, 2],
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Booking Trends Chart
+            const bookingCtx = document.getElementById('bookingChart').getContext('2d');
+            new Chart(bookingCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Bookings',
+                        data: [12, 19, 3, 5, 2, 3],
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

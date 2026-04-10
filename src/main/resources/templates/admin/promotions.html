@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Promotion Management - Book My Show</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container mt-4">
+            <!-- Page Header -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h2 class="fw-bold mb-0">
+                        <i class="fas fa-tags me-2 text-primary"></i>Promotion Management
+                    </h2>
+                    <p class="text-muted mb-0">Manage promotions and discount codes</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="/admin/promotions/add" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Add New Promotion
+                    </a>
+                </div>
+            </div>
+
+            <!-- Success/Error Messages -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Promotions Table -->
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>All Promotions
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Value</th>
+                                    <th>Usage</th>
+                                    <th>Valid Period</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="promotion : ${promotions}">
+                                    <td>
+                                        <span class="badge bg-secondary font-monospace" th:text="${promotion.code}">SAVE20</span>
+                                    </td>
+                                    <td th:text="${promotion.name}">Summer Sale</td>
+                                    <td>
+                                        <span class="badge" 
+                                              th:classappend="${promotion.discountType.name() == 'PERCENTAGE'} ? 'bg-info' : 'bg-success'"
+                                              th:text="${promotion.discountType.displayName}">Percentage</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${promotion.discountType.name() == 'PERCENTAGE'}" 
+                                              th:text="${promotion.discountValue} + '%'">20%</span>
+                                        <span th:if="${promotion.discountType.name() == 'FIXED_AMOUNT'}" 
+                                              th:text="'Rs. ' + ${promotion.discountValue}">Rs. 100</span>
+                                    </td>
+                                    <td>
+                                        <span th:text="${promotion.usedCount} + '/' + ${promotion.usageLimit != null ? promotion.usageLimit : '∞'}">5/100</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>
+                                            <span th:text="${#temporals.format(promotion.startDate, 'MMM dd')} + ' - ' + ${#temporals.format(promotion.endDate, 'MMM dd, yyyy')}">Jan 01 - Dec 31, 2024</span>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span th:if="${promotion.isActive}" class="badge bg-success">Active</span>
+                                        <span th:if="${!promotion.isActive}" class="badge bg-secondary">Inactive</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a th:href="@{/admin/promotions/edit/{id}(id=${promotion.id})}" 
+                                               class="btn btn-sm btn-outline-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    th:onclick="'toggleStatus(' + ${promotion.id} + ')'"
+                                                    class="btn btn-sm" 
+                                                    th:classappend="${promotion.isActive} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                                    th:title="${promotion.isActive} ? 'Deactivate' : 'Activate'">
+                                                <i th:classappend="${promotion.isActive} ? 'fas fa-pause' : 'fas fa-play'"></i>
+                                            </button>
+                                            <button type="button" 
+                                                    th:onclick="'deletePromotion(' + ${promotion.id} + ')'"
+                                                    class="btn btn-sm btn-outline-danger" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${promotions == null or promotions.empty}" class="text-center py-5">
+                <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No Promotions Found</h4>
+                <p class="text-muted">Create your first promotion to start offering discounts to customers.</p>
+                <a href="/admin/promotions/add" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add New Promotion
+                </a>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete this promotion?</p>
+                        <p class="text-muted small">This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form id="deleteForm" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i>Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toggle Status Confirmation Modal -->
+        <div class="modal fade" id="toggleModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="fas fa-toggle-on me-2"></i>Toggle Status
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="toggleMessage">Are you sure you want to change the status of this promotion?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form id="toggleForm" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-toggle-on me-1"></i>Confirm
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function deletePromotion(id) {
+                document.getElementById('deleteForm').action = '/admin/promotions/delete/' + id;
+                new bootstrap.Modal(document.getElementById('deleteModal')).show();
+            }
+
+            function toggleStatus(id) {
+                document.getElementById('toggleForm').action = '/admin/promotions/toggle-status/' + id;
+                new bootstrap.Modal(document.getElementById('toggleModal')).show();
+            }
+        </script>
+    </div>
+</body>
+</html>

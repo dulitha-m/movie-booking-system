@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+        <title>Register - Book My Show</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="card shadow">
+                        <div class="card-body p-5">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                                <h2 class="fw-bold">Create Account</h2>
+                                <p class="text-muted">Join our movie community today</p>
+                                
+                                <!-- Error Message -->
+                                <div th:if="${error}" class="alert alert-danger" role="alert">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <span th:text="${error}"></span>
+                                </div>
+                            </div>
+                            
+                            <form th:action="@{/register}" th:object="${user}" method="post">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="firstName" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="firstName" th:field="*{firstName}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="lastName" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="lastName" th:field="*{lastName}" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-envelope"></i>
+                                        </span>
+                                        <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                                    </div>
+                                    <div th:if="${#fields.hasErrors('email')}" class="text-danger small mt-1">
+                                        <span th:errors="*{email}"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="role" class="form-label">Account Type</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-user-tag"></i>
+                                        </span>
+                                        <select class="form-select" id="role" th:field="*{role}" required>
+                                            <option value="">Select Account Type</option>
+                                            <option value="USER">Customer</option>
+                                            <option value="ADMIN">Admin</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="phoneNumber" class="form-label">Phone Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-phone"></i>
+                                        </span>
+                                        <input type="tel" class="form-control" id="phoneNumber" th:field="*{phoneNumber}">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-lock"></i>
+                                        </span>
+                                        <input type="password" class="form-control" id="password" th:field="*{password}" 
+                                               minlength="6" required>
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle text-primary me-1"></i>
+                                        Password must be at least 6 characters long
+                                    </div>
+                                    <div th:if="${#fields.hasErrors('password')}" class="text-danger small mt-1">
+                                        <span th:errors="*{password}"></span>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary w-100 mb-3">
+                                    <i class="fas fa-user-plus me-2"></i>Create Account
+                                </button>
+                            </form>
+                            
+                            <div class="text-center">
+                                <p class="mb-0">Already have an account? 
+                                    <a href="/login" class="text-primary text-decoration-none">Sign in here</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
